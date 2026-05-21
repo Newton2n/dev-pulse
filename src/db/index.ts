@@ -1,11 +1,11 @@
 import { Pool } from "pg";
 import config from "../config/dotenv";
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: config.connectionString,
 });
 
-const dbInit = async () => {
+export const dbInit = async () => {
   try {
     await pool.query(`
     CREATE TABLE IF NOT EXISTS users(
@@ -13,7 +13,7 @@ const dbInit = async () => {
     name VARCHAR(50) NOT NULL,
     email VARCHAR(50) UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role VARCHAR(20) DEFAULT 'contributor' CHECK (role IN ('contributor', 'maintainer')),
+    role VARCHAR(20) NOT NULL DEFAULT 'contributor' CHECK (role IN ('contributor', 'maintainer')),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
     )`);
@@ -36,4 +36,4 @@ const dbInit = async () => {
   }
 };
 
-export default dbInit;
+

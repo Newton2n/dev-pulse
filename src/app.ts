@@ -1,11 +1,17 @@
-import express, { type Application, type Request, type Response } from "express" 
+import express, {
+    urlencoded,
+  type Application
+} from "express";
+import { loginRoute } from "./modules/auth/auth-route";
 
-const  app :Application = express() ;
-
-app.get("/",(req :Request,res:Response)=>{
-console.log("welcome to dev pulse api ,home route")
-})
+const app: Application = express();
 
 
+//middleware
+app.use(express.json());
 
-export default app
+
+
+app.use("/api/auth", loginRoute);
+
+export default app;

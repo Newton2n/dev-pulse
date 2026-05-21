@@ -1,5 +1,5 @@
 import app from "./app";
-import dbInit from "./db";
+import {dbInit} from "./db";
 const main = () => {
   dbInit();
   app.listen(5000, () => {
