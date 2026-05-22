@@ -7,6 +7,6 @@ import {
 const issuesRoute = Router();
 
 issuesRoute.post("/", createIssueController); //create issue
-issuesRoute.get("/", getAllIssuesController); //create issue
+issuesRoute.get("/", getAllIssuesController); //get all issues
 
 export default issuesRoute;

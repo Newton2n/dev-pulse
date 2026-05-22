@@ -1,7 +1,6 @@
 import { pool } from "../../db";
 import type { IIssue, IIssueAndUser } from "./issues-interface";
 import getUserDetails from "../../utils/get-user-details";
-import { promiseHooks } from "node:v8";
 
 //create issue
 export const createIssueIntoDb = async (payload: IIssue, userId: number) => {
@@ -29,40 +28,35 @@ export const createIssueIntoDb = async (payload: IIssue, userId: number) => {
   return createIssue.rows[0];
 };
 
+
+// get all issues 
 export const getAllIssueFromDb = async () => {
   const getIssueResponse = await pool.query(
     `
         SELECT * FROM issues
         
         `,
-  );
+  ); // get all issues from issues table
 
-  const allIssues = getIssueResponse.rows;
+  const allIssues = getIssueResponse.rows; //all issues
 
-  //   console.log("all issues", allIssues);
   const issuesPromises = allIssues.map(
     async (issue): Promise<IIssueAndUser> => {
-      console.log("id", issue.reporter_id);
-
       const { reporter_id, created_at, updated_at, ...issueWithoutReporterId } =
-        issue;
+        issue; // extract issue obj
 
-      const userDetails = await getUserDetails(reporter_id);
-
-      console.log("users details", userDetails);
+      const userDetails = await getUserDetails(reporter_id); // get single user details (id,name,role)
 
       return {
         ...issueWithoutReporterId,
         reporter: userDetails,
         created_at,
         updated_at,
-      };
+      }; // return issue obj with reporter details
     },
   );
   const issuesWithUserDetails: IIssueAndUser[] =
-    await Promise.all(issuesPromises);
+    await Promise.all(issuesPromises); // wait until all issuesPromise resolve
 
-  console.log(issuesWithUserDetails);
   return issuesWithUserDetails;
 };
-

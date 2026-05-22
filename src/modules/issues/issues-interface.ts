@@ -16,10 +16,10 @@ export interface IIssueAndUser extends IIssue {
   updated_at: string;
 }
 
-export type IUserTokenPayload = {
+export interface IUserTokenPayload {
   id: number;
   name: string;
   role: string;
   iat?: number;
   exp?: number;
-};
+}
