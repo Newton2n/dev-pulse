@@ -1,12 +1,13 @@
 import type { Request, Response } from "express";
-import { signupInDb } from "./auth-service";
+import { loginIntoDb, signupIntoDb } from "./auth-service";
 import { successResponse, errorResponse } from "../../utils/send-response";
 
-import { StatusCodes, getReasonPhrase } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 
-export const loginController = async (req: Request, res: Response) => {
+//signup controller
+export const signupController = async (req: Request, res: Response) => {
   try {
-    const response = await signupInDb(req.body);
+    const response = await signupIntoDb(req.body);
 
     successResponse(
       res,
@@ -15,11 +16,23 @@ export const loginController = async (req: Request, res: Response) => {
       "User registered successfully",
     );
   } catch (error: unknown) {
-    errorResponse(
-      res,
-      StatusCodes.BAD_REQUEST,
-      getReasonPhrase(StatusCodes.BAD_REQUEST),
-      error,
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error
+
+    errorResponse(res, StatusCodes.BAD_REQUEST, errorMessage, error); // send error response
+  }
+};
+
+//log in controller
+export const loginController = async (req: Request, res: Response) => {
+  try {
+    const response = await loginIntoDb(req.body); // signin response
+
+    successResponse(res, StatusCodes.OK, response, "Login successful"); // send success response
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error
+
+    errorResponse(res, StatusCodes.NOT_FOUND, errorMessage, error); // send error response
   }
 };
