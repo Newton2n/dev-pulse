@@ -2,7 +2,7 @@ import express, {
     urlencoded,
   type Application
 } from "express";
-import { loginRoute } from "./modules/auth/auth-route";
+import { loginRoute } from "./modules/authentication/auth-route";
 
 const app: Application = express();
 
