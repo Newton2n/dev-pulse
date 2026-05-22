@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { createIssue } from "./issues-controller";
+import {
+  createIssueController,
+  getAllIssuesController,
+} from "./issues-controller";
 
 const issuesRoute = Router();
 
-issuesRoute.post("/", createIssue); //create issue
+issuesRoute.post("/", createIssueController); //create issue
+issuesRoute.get("/", getAllIssuesController); //create issue
 
 export default issuesRoute;
