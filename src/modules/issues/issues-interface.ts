@@ -4,14 +4,16 @@ export interface IIssue {
   type: "bug" | "feature_request";
 }
 
-export interface IIssueAndUser extends IIssue {
-  id: number;
-  status: "open" | "in_progress" | "resolved";
-  reporter: {
+export interface IReporter {
     id: number;
     name: string;
     role: "contributor" | "maintainer";
-  };
+}
+
+export interface IIssueAndReporter extends IIssue {
+  id: number;
+  status: "open" | "in_progress" | "resolved";
+  reporter: IReporter;
   created_at: string;
   updated_at: string;
 }

@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
-import { createIssueIntoDb, getAllIssueFromDb } from "./issues-service";
+import {
+  createIssueIntoDb,
+  getAllIssueFromDb,
+  getSingleIssueFromDb,
+} from "./issues-service";
 import extractJwtToken from "../../utils/extract-jwt-token";
-import type { IIssueAndUser, IUserTokenPayload } from "./issues-interface";
+import type { IIssueAndReporter, IUserTokenPayload } from "./issues-interface";
 import { errorResponse, successResponse } from "../../utils/send-response";
 import { StatusCodes } from "http-status-codes";
 
@@ -44,13 +48,30 @@ export const createIssueController = async (req: Request, res: Response) => {
 
 export const getAllIssuesController = async (req: Request, res: Response) => {
   try {
-    const response: IIssueAndUser[] = await getAllIssueFromDb(); // get all issues with reporter details
+    const response: IIssueAndReporter[] = await getAllIssueFromDb(); // get all issues with reporter details
 
     successResponse(res, StatusCodes.OK, response);
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
 
-    errorResponse(res, StatusCodes.SERVICE_UNAVAILABLE, errorMessage, error);
+    errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
+  }
+};
+
+export const getSingleIssue = async (req: Request, res: Response) => {
+  try {
+    const issueId = req.params?.id; 
+
+    const response: IIssueAndReporter = await getSingleIssueFromDb(
+      Number(issueId),
+    ); //get single issue with reporter details
+
+    successResponse(res, StatusCodes.OK, response);
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
+
+    errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
   }
 };
