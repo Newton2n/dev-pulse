@@ -9,7 +9,9 @@ export const signupIntoDb = async (payload: IUser) => {
   const { name, email, password, role } = payload;
 
   if (!name || !email || !password) {
-    throw new Error("All payload field required");
+    throw new Error(
+      "Missing required fields: name, email, and password are required",
+    );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10); //hash password
@@ -35,7 +37,7 @@ export const loginIntoDb = async (payload: Omit<IUser, "name" | "role">) => {
   const { email, password } = payload;
 
   if (!email || !password) {
-    throw new Error("All payload are required");
+    throw new Error("Missing required fields: email and password are required");
   }
 
   const checkUserFromDb = await pool.query(
@@ -64,7 +66,9 @@ export const loginIntoDb = async (payload: Omit<IUser, "name" | "role">) => {
     role: user.role,
   } as JwtPayload; // jwt payload
 
-  const jwtSignToken = jwt.sign(jwtPayload, config.jwtSecret); // generate jwt token
+  const jwtSignToken = jwt.sign(jwtPayload, config.jwtSecret, {
+    expiresIn: "30d",
+  }); // generate jwt token
 
   delete user.password; // delete user password before response
 
