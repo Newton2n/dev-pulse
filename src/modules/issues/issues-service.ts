@@ -1,9 +1,20 @@
 import { pool } from "../../db";
-import type { IIssue, IIssueAndReporter, IReporter } from "./issues-interface";
+import type {
+  IIssue,
+  IIssueAndReporter,
+  IReporter,
+  IUserTokenPayload,
+  TIssueUpdatePayload,
+} from "./issues-interface";
 import getUserDetails from "../../utils/get-user-details";
+import getIssueDetails from "../../utils/get-issue-details";
+import extractJwtToken from "../../utils/extract-jwt-token";
 
 //create issue
-export const createIssueIntoDb = async (payload: IIssue, userId: number) => {
+export const createIssueIntoDb = async (
+  payload: IIssue,
+  userId: number,
+): Promise<Omit<IIssueAndReporter, "reporter">> => {
   const { title, description, type } = payload;
 
   if (!title || !description || !type) {
@@ -29,7 +40,7 @@ export const createIssueIntoDb = async (payload: IIssue, userId: number) => {
 };
 
 // get all issues
-export const getAllIssueFromDb = async () => {
+export const getAllIssueFromDb = async (): Promise<IIssueAndReporter[]> => {
   const getIssueResponse = await pool.query(
     `
         SELECT * FROM issues
@@ -60,27 +71,23 @@ export const getAllIssueFromDb = async () => {
   return issuesWithUserDetails;
 };
 
-export const getSingleIssueFromDb = async (issueId: number) => {
+//get single issue from db
+export const getSingleIssueFromDb = async (
+  issueId: number,
+): Promise<IIssueAndReporter> => {
   if (!issueId) {
     throw new Error("Missing required field: issue id required");
   }
 
-  const getIssueDetails = await pool.query(
-    `
-    SELECT * FROM issues
-    WHERE id =$1
-    `,
-    [issueId],
-  );
+  const getIssue = await getIssueDetails(issueId); // get issue from db
 
-  if (getIssueDetails.rows.length === 0) {
-    throw new Error(`Issue with ID ${issueId} not found`);
+  const { reporter_id, created_at, updated_at, ...restItems } = getIssue; //extract information
+
+  if (!reporter_id) {
+    throw new Error("Reporter ID is missing");
   }
 
-  const { reporter_id, created_at, updated_at, ...restItems } =
-    getIssueDetails.rows[0]; //extract information
-
-  const getReporterDetails: IReporter = await getUserDetails(reporter_id); //get reporter details (id,name,role)
+  const getReporterDetails = await getUserDetails(reporter_id); //get reporter details (id,name,role)
 
   return {
     ...restItems,
@@ -88,4 +95,49 @@ export const getSingleIssueFromDb = async (issueId: number) => {
     created_at,
     updated_at,
   };
+};
+
+// Maintainer (any issue) OR Contributor (own issue, only if status is open)
+
+// {
+//   "title": "Updated: Database pool exhaustion fix needed",
+//   "description": "Updated description with reproduction steps...",
+//   "type": "bug"
+// }
+
+export const updateIssueIntoDb = async (
+  issueId: number,
+  jwtToken: string,
+  payload: TIssueUpdatePayload,
+) => {
+  const { title, description, type } = payload;
+
+  if (!title || !description || !type) {
+    throw new Error(
+      "Missing required fields: title , description ,type are required",
+    );
+  }
+
+  const decodeJwtToken: IUserTokenPayload = (await extractJwtToken(
+    jwtToken,
+  )) as IUserTokenPayload; // verify jwt token and decode details
+
+  const { id: userId, role: userRole } = decodeJwtToken; //rename id and role
+
+
+  const issueDetails = await getIssueDetails(issueId);
+  console.log( "user details",userId ,userRole ,issueDetails.status)
+
+  // console.log("contributon status", userRole === "contributor"  ,userId !== issueDetails.reporter_id , issueDetails.status !== "open")
+
+  // if (
+  //   userRole === "contributor" &&
+  //   userId !== issueDetails.reporter_id &&
+  //   issueDetails.status !== "open"
+  // ) {
+  //   throw new Error("Contributor can not update others issue details");
+  // }
+
+
+
 };

@@ -3,6 +3,7 @@ import {
   createIssueIntoDb,
   getAllIssueFromDb,
   getSingleIssueFromDb,
+  updateIssueIntoDb,
 } from "./issues-service";
 import extractJwtToken from "../../utils/extract-jwt-token";
 import type { IIssueAndReporter, IUserTokenPayload } from "./issues-interface";
@@ -48,7 +49,7 @@ export const createIssueController = async (req: Request, res: Response) => {
 
 export const getAllIssuesController = async (req: Request, res: Response) => {
   try {
-    const response: IIssueAndReporter[] = await getAllIssueFromDb(); // get all issues with reporter details
+    const response = await getAllIssueFromDb(); // get all issues with reporter details
 
     successResponse(res, StatusCodes.OK, response);
   } catch (error) {
@@ -59,15 +60,45 @@ export const getAllIssuesController = async (req: Request, res: Response) => {
   }
 };
 
-export const getSingleIssue = async (req: Request, res: Response) => {
+export const getSingleIssueController = async (req: Request, res: Response) => {
   try {
-    const issueId = req.params?.id; 
+    const issueId = req.params?.id;
 
-    const response: IIssueAndReporter = await getSingleIssueFromDb(
-      Number(issueId),
-    ); //get single issue with reporter details
+    const response = await getSingleIssueFromDb(Number(issueId)); //get single issue with reporter details
 
     successResponse(res, StatusCodes.OK, response);
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
+
+    errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
+  }
+};
+
+// Maintainer (any issue) OR Contributor (own issue, only if status is open)
+
+// {
+//   "title": "Updated: Database pool exhaustion fix needed",
+//   "description": "Updated description with reproduction steps...",
+//   "type": "bug"
+// }
+export const updateIssueController = async (req: Request, res: Response) => {
+  try {
+    const headers = req.headers;
+    const issueId = req.params?.id;
+    console.log("issue id", issueId);
+    if (!headers.authorization || !issueId) {
+      throw new Error("Authorization token and issue id required");
+    }
+    const payload = req.body;
+
+    const updateIssue = await updateIssueIntoDb(
+      Number(issueId),
+      headers.authorization,
+      payload,
+    );
+
+    console.log("update issue", updateIssue);
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;

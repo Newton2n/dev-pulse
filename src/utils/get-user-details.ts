@@ -1,6 +1,7 @@
 import { pool } from "../db";
+import type { IReporter } from "../modules/issues/issues-interface";
 
-const getUserDetails = async (userId: number) => {
+const getUserDetails = async (userId: number): Promise<IReporter> => {
   try {
     if (!userId) {
       throw new Error("Missing required field: userId");
@@ -19,7 +20,9 @@ const getUserDetails = async (userId: number) => {
 
     return getDetails.rows[0];
   } catch (error) {
-    throw new Error("Something went wrong to get user details");
+      const errorMessage =
+      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
+    throw new Error(errorMessage);
   }
 };
 
