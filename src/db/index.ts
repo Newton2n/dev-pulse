@@ -32,6 +32,7 @@ export const dbInit = async () => {
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
     )`);
+    console.log("DATABASE CONNECTION STABLISH")
   } catch (error) {
     throw error;
   }
