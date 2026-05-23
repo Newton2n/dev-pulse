@@ -69,7 +69,12 @@ export const getSingleIssueController = async (req: Request, res: Response) => {
     //get single issue with reporter details
     const response = await getSingleIssueFromDb(Number(issueId));
 
-    successResponse(res, StatusCodes.OK, response);
+    successResponse(
+      res,
+      StatusCodes.OK,
+      response,
+      "Issue retrived successfully",
+    );
   } catch (error) {
     // check the error object is js standard error ;
     const errorMessage =
