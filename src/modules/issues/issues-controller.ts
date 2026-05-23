@@ -13,23 +13,13 @@ import { StatusCodes } from "http-status-codes";
 //create issue controller
 export const createIssueController = async (req: Request, res: Response) => {
   try {
-    const headers = req.headers;
-    if (!headers.authorization) {
-      throw new Error("Authorization token required");
+    const user = req.userDetails;
+
+    if (!user) {
+      throw new Error("Authorization fail");
     }
 
-    const decodeJwtToken = (await extractJwtToken(
-      headers.authorization as string,
-    )) as IUserTokenPayload; // verify jwt token and decode details
-
-    if (!["contributor", "maintainer"].includes(decodeJwtToken.role)) {
-      throw new Error("Authorization failed");
-    }
-
-    const issueCreateResponse = await createIssueIntoDb(
-      req.body,
-      decodeJwtToken.id,
-    ); // create issue into db
+    const issueCreateResponse = await createIssueIntoDb(req.body, user.id); // create issue into db
 
     successResponse(
       res,
@@ -60,6 +50,7 @@ export const getAllIssuesController = async (req: Request, res: Response) => {
   }
 };
 
+//get single issue
 export const getSingleIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
@@ -82,21 +73,19 @@ export const getSingleIssueController = async (req: Request, res: Response) => {
 //   "description": "Updated description with reproduction steps...",
 //   "type": "bug"
 // }
+
+//update issue
 export const updateIssueController = async (req: Request, res: Response) => {
   try {
-    const headers = req.headers;
     const issueId = req.params?.id;
     console.log("issue id", issueId);
-    if (!headers.authorization || !issueId) {
-      throw new Error("Authorization token and issue id required");
+    const user = req.userDetails;
+    if (!user) {
+      throw new Error("Authorization fail");
     }
     const payload = req.body;
 
-    const updateIssue = await updateIssueIntoDb(
-      Number(issueId),
-      headers.authorization,
-      payload,
-    );
+    const updateIssue = await updateIssueIntoDb(Number(issueId), user, payload);
 
     console.log("update issue", updateIssue);
   } catch (error) {

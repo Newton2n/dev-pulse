@@ -3,14 +3,29 @@ import {
   createIssueController,
   getAllIssuesController,
   getSingleIssueController,
-  updateIssueController
+  updateIssueController,
 } from "./issues-controller";
+
+import {
+  verifyJwtToken,
+  authorizeRoles,
+} from "../../middlewares/auth-middleware";
 
 const issuesRoute = Router();
 
-issuesRoute.post("/", createIssueController); //create issue
+issuesRoute.post(
+  "/",
+  verifyJwtToken,
+  authorizeRoles(["contributor", "maintainer"]),
+  createIssueController,
+); //create issue
 issuesRoute.get("/", getAllIssuesController); //get all issues
 issuesRoute.get("/:id", getSingleIssueController); //get single issues
-issuesRoute.patch("/:id", updateIssueController); //get single issues
+issuesRoute.patch(
+  "/:id",
+  verifyJwtToken,
+  authorizeRoles(["contributor", "maintainer"]),
+  updateIssueController,
+); //get single issues
 
 export default issuesRoute;

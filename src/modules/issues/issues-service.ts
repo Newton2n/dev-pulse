@@ -107,7 +107,7 @@ export const getSingleIssueFromDb = async (
 
 export const updateIssueIntoDb = async (
   issueId: number,
-  jwtToken: string,
+  userDetails: IUserTokenPayload,
   payload: TIssueUpdatePayload,
 ) => {
   const { title, description, type } = payload;
@@ -118,26 +118,34 @@ export const updateIssueIntoDb = async (
     );
   }
 
-  const decodeJwtToken: IUserTokenPayload = (await extractJwtToken(
-    jwtToken,
-  )) as IUserTokenPayload; // verify jwt token and decode details
-
-  const { id: userId, role: userRole } = decodeJwtToken; //rename id and role
-
+  const { id: userId, role: userRole } = userDetails; //rename id and role
 
   const issueDetails = await getIssueDetails(issueId);
-  console.log( "user details",userId ,userRole ,issueDetails.status)
 
-  // console.log("contributon status", userRole === "contributor"  ,userId !== issueDetails.reporter_id , issueDetails.status !== "open")
+  const isMaintainer = userRole === "maintainer";
 
-  // if (
-  //   userRole === "contributor" &&
-  //   userId !== issueDetails.reporter_id &&
-  //   issueDetails.status !== "open"
-  // ) {
+  const isContributorAndOwnIssue =
+    userRole === "contributor" &&
+    userId === issueDetails.reporter_id &&
+    issueDetails.status === "open";
+
+  if (isMaintainer || isContributorAndOwnIssue) {
+    // {
+    //   "title": "Updated: Database pool exhaustion fix needed",
+    //   "description": "Updated description with reproduction steps...",
+    //   "type": "bug"
+    // }
+    const updateIssue = await pool.query(
+      `
+      UPDATE issues
+      SET title = $1 ,description =$2 ,type =$3 ,updated_at = NOW()
+      WHERE id = $4
+      `,
+      [title, description, type, issueId],
+    );
+    console.log("update issue details", updateIssue);
+  }
+
   //   throw new Error("Contributor can not update others issue details");
   // }
-
-
-
 };
