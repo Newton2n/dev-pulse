@@ -8,7 +8,6 @@ import type {
 } from "./issues-interface";
 import getUserDetails from "../../utils/get-user-details";
 import getIssueDetails from "../../utils/get-issue-details";
-import extractJwtToken from "../../utils/extract-jwt-token";
 
 //create issue
 export const createIssueIntoDb = async (
@@ -101,7 +100,7 @@ export const updateIssueIntoDb = async (
   issueId: number,
   userDetails: IUserTokenPayload,
   payload: TIssueUpdatePayload,
-) => {
+): Promise<Omit<IIssueAndReporter, "reporter">> => {
   const { title, description, type, status } = payload;
 
   const updateIssueStatus = status ? status : "open";
@@ -126,7 +125,6 @@ export const updateIssueIntoDb = async (
 
   // get access to update issue is user is maintainer or contributor(own issue, only if status is open)
   if (isMaintainer || isContributorAndOwnIssue) {
-
     //db query
     const updateIssue = await pool.query(
       `
@@ -136,8 +134,8 @@ export const updateIssueIntoDb = async (
       RETURNING *
       `,
       [title, description, type, updateIssueStatus, issueId],
-    ); 
-    
+    );
+
     //throw error if update issue don not resolve
     if (updateIssue.rows.length === 0) {
       throw new Error(
@@ -155,4 +153,23 @@ export const updateIssueIntoDb = async (
 
 //delete issue
 
-export const deleteIssueFromDb = async (issueId: number) => {};
+export const deleteIssueFromDb = async (issueId: number) => {
+  if (!issueId) {
+    throw new Error("Issue id is missing ");
+  }
+
+  //db query for deleting issue
+  const deleteIssue = await pool.query(
+    `
+    DELETE FROM issues
+    WHERE id =$1
+    
+    `,
+    [issueId],
+  );
+
+  if (deleteIssue.rowCount === 0) {
+    throw new Error("Issue not found");
+  }
+
+};

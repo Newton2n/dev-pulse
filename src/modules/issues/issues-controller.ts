@@ -115,22 +115,29 @@ export const updateIssueController = async (req: Request, res: Response) => {
   }
 };
 
+// delete issue controller
 export const deleteIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
     console.log("issue id", issueId);
     const user = req.userDetails;
-    if (!user) {
-      throw new Error("Authorization fail");
+    if (!user || !issueId) {
+      throw new Error("Authorization fail or No issue id");
     }
 
-    const deleteIssue = await deleteIssueFromDb(Number(issueId));
+    //delete issue
+    await deleteIssueFromDb(Number(issueId));
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Issue deleted successfully",
+    });
   } catch (error) {
     // check the error object is js standard error ;
     const errorMessage =
       error instanceof Error
         ? error.message
-        : "An error occurred on deleting issue";
+        : "An error occurred when deleting issue";
 
     errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
   }
