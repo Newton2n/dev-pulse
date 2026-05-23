@@ -9,6 +9,8 @@ app.use(cors());
 
 //middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.text());
 
 //Authentication route
 app.use("/api/auth", loginRoute);
