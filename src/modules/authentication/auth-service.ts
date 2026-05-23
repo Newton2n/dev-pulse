@@ -13,21 +13,24 @@ export const signupIntoDb = async (payload: IUser) => {
       "Missing required fields: name, email, and password are required",
     );
   }
+  //hash password with 10 salt round
+  const hashedPassword = await bcrypt.hash(password, 10); 
 
-  const hashedPassword = await bcrypt.hash(password, 10); //hash password
+ // fallback if client do not give role field
+  const userRole = role || "contributor"; 
 
-  const userRole = role || "contributor"; // fallback if client do not give role
-
+  // data base query for signup
   const response = await pool.query(
     `
         INSERT INTO users (name,email,password,role)
         VALUES($1,$2,$3,$4)
         RETURNING *
         `,
-    [name, email, hashedPassword, userRole], // data base query for signup
+    [name, email, hashedPassword, userRole], 
   );
 
-  delete response?.rows[0]?.password; // delete password field before return
+ // delete password field before return
+  delete response?.rows[0]?.password; 
 
   return response?.rows[0];
 };
@@ -54,23 +57,28 @@ export const loginIntoDb = async (payload: Omit<IUser, "name" | "role">) => {
 
   const user = checkUserFromDb?.rows[0];
 
-  const comparePassword = await bcrypt.compare(password, user.password); //check password
+  //compare hash and given  password 
+  const comparePassword = await bcrypt.compare(password, user.password); 
 
   if (!comparePassword) {
     throw new Error("Invalid credential");
   }
 
+  // jwt payload
   const jwtPayload = {
     id: user.id,
     name: user.name,
     role: user.role,
-  } as JwtPayload; // jwt payload
+  } as JwtPayload; 
 
+
+  // generate jwt token
   const jwtSignToken = jwt.sign(jwtPayload, config.jwtSecret, {
     expiresIn: "30d",
-  }); // generate jwt token
+  }); 
 
-  delete user.password; // delete user password before response
+  // delete user password before response
+  delete user.password; 
 
   return {
     token: jwtSignToken,

@@ -14,21 +14,31 @@ import {
 
 const issuesRoute = Router();
 
-
+//create issue
 issuesRoute.post(
   "/",
   verifyJwtToken,
   authorizeRoles(["contributor", "maintainer"]),
   createIssueController,
-); //create issue
-issuesRoute.get("/", getAllIssuesController); //get all issues
-issuesRoute.get("/:id", getSingleIssueController); //get single issues
+);
+
+//get all issues
+issuesRoute.get("/", getAllIssuesController);
+
+//get single issues
+issuesRoute.get("/:id", getSingleIssueController);
+
+//update issues
+// added two middleware to check authorization header and roles
 issuesRoute.patch(
   "/:id",
   verifyJwtToken,
   authorizeRoles(["contributor", "maintainer"]),
   updateIssueController,
-); //get single issues
+);
+
+//delete issue
+// added two middleware to check authorization header and role
 issuesRoute.delete(
   "/:id",
   verifyJwtToken,

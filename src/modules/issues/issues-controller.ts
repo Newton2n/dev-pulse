@@ -6,12 +6,11 @@ import {
   getSingleIssueFromDb,
   updateIssueIntoDb,
 } from "./issues-service";
-import extractJwtToken from "../../utils/extract-jwt-token";
-import type { IIssueAndReporter, IUserTokenPayload } from "./issues-interface";
 import { errorResponse, successResponse } from "../../utils/send-response";
 import { StatusCodes } from "http-status-codes";
 
 //create issue controller
+
 export const createIssueController = async (req: Request, res: Response) => {
   try {
     const user = req.userDetails;
@@ -20,7 +19,8 @@ export const createIssueController = async (req: Request, res: Response) => {
       throw new Error("Authorization fail");
     }
 
-    const issueCreateResponse = await createIssueIntoDb(req.body, user.id); // create issue into db
+    // create issue into db
+    const issueCreateResponse = await createIssueIntoDb(req.body, user.id);
 
     successResponse(
       res,
@@ -29,8 +29,11 @@ export const createIssueController = async (req: Request, res: Response) => {
       "Issue created successfully",
     );
   } catch (error) {
+    // check the error object is js standard error
     const errorMessage =
-      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error
+      error instanceof Error
+        ? error.message
+        : "An error occurred when creating issue";
 
     errorResponse(res, StatusCodes.BAD_REQUEST, errorMessage, error);
   }
@@ -40,34 +43,41 @@ export const createIssueController = async (req: Request, res: Response) => {
 
 export const getAllIssuesController = async (req: Request, res: Response) => {
   try {
-    const response = await getAllIssueFromDb(); // get all issues with reporter details
+    // get all issues with reporter details
+    const response = await getAllIssueFromDb();
 
     successResponse(res, StatusCodes.OK, response);
   } catch (error) {
+    // check the error object is js standard error ;
     const errorMessage =
-      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
-
+      error instanceof Error ? error.message : "An error occurred";
     errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
   }
 };
 
 //get single issue controller
+
 export const getSingleIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
 
-    const response = await getSingleIssueFromDb(Number(issueId)); //get single issue with reporter details
+    //get single issue with reporter details
+    const response = await getSingleIssueFromDb(Number(issueId));
 
     successResponse(res, StatusCodes.OK, response);
   } catch (error) {
+    // check the error object is js standard error ;
     const errorMessage =
-      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
+      error instanceof Error
+        ? error.message
+        : "An error occurred when fetching single issue";
 
     errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
   }
 };
 
 //update issue controller
+
 export const updateIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;

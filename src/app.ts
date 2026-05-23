@@ -7,8 +7,10 @@ const app: Application = express();
 //middleware
 app.use(express.json());
 
-app.use("/api/auth", loginRoute); //Authentication route
+ //Authentication route
+app.use("/api/auth", loginRoute);
 
-app.use("/api/issues", issuesRoute); //Issues route
+//Issues route
+app.use("/api/issues", issuesRoute); 
 
 export default app;

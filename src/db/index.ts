@@ -1,10 +1,12 @@
 import { Pool } from "pg";
 import config from "../config/dotenv";
 
+//database connection pool
 export const pool = new Pool({
   connectionString: config.connectionString,
 });
 
+//database query for creating users table
 export const dbInit = async () => {
   try {
     await pool.query(`
@@ -18,6 +20,7 @@ export const dbInit = async () => {
     updated_at TIMESTAMP DEFAULT NOW()
     )`);
 
+    //database query for creating issues table
     await pool.query(`
         CREATE TABLE IF NOT EXISTS issues(
         id SERIAL PRIMARY KEY,
@@ -29,11 +32,7 @@ export const dbInit = async () => {
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
     )`);
-
-    console.log("DATA BASE CONNECTED SUCCESSFULLY");
   } catch (error) {
-    console.log("error to connect data base", error);
+    throw error;
   }
 };
-
-
