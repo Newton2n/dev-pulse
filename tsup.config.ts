@@ -1,29 +1,33 @@
 import { defineConfig } from "tsup";
-
 export default defineConfig({
-  entry: ["src/server.ts"],
 
-  format: ["esm"],
+ entry: ["src/server.ts"],
 
-  target: "esnext",
+ format: ["esm"], 
 
-  outDir: "dist",
+ target: "esnext",
 
-  clean: true,
+ outDir: "dist",
 
-  bundle: true,
+ clean: true,
 
-  splitting: false,
+ bundle: true,
 
-  sourcemap: true,
+ splitting: false,
 
-  banner: {
-    js: `
+ sourcemap: true,
+
+ 
+ banner: {
+
+  js: `
 
    import { createRequire } from 'module';
 
    const require = createRequire(import.meta.url);
 
   `,
-  },
+
+ },
+
 });
