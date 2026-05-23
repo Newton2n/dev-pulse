@@ -46,7 +46,12 @@ export const getAllIssuesController = async (req: Request, res: Response) => {
     // get all issues with reporter details
     const response = await getAllIssueFromDb();
 
-    successResponse(res, StatusCodes.OK, response);
+    successResponse(
+      res,
+      StatusCodes.OK,
+      response,
+      "Issues retrived successfully",
+    );
   } catch (error) {
     // check the error object is js standard error ;
     const errorMessage =
