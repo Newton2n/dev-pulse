@@ -25,8 +25,8 @@ export const verifyJwtToken = async (
     next();
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : "Jwt token verified fail"; // check the error object is js standard error ;
-
+    error instanceof Error ? error.message : "Jwt token verified fail"; //check the error object is js standard error ;
+    
     errorResponse(res, StatusCodes.UNAUTHORIZED, errorMessage, error);
   }
 };

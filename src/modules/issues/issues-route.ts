@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createIssueController,
+  deleteIssueController,
   getAllIssuesController,
   getSingleIssueController,
   updateIssueController,
@@ -12,6 +13,7 @@ import {
 } from "../../middlewares/auth-middleware";
 
 const issuesRoute = Router();
+
 
 issuesRoute.post(
   "/",
@@ -27,5 +29,11 @@ issuesRoute.patch(
   authorizeRoles(["contributor", "maintainer"]),
   updateIssueController,
 ); //get single issues
+issuesRoute.delete(
+  "/:id",
+  verifyJwtToken,
+  authorizeRoles(["maintainer"]),
+  deleteIssueController,
+);
 
 export default issuesRoute;

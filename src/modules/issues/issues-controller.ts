@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import {
   createIssueIntoDb,
+  deleteIssueFromDb,
   getAllIssueFromDb,
   getSingleIssueFromDb,
   updateIssueIntoDb,
@@ -35,7 +36,7 @@ export const createIssueController = async (req: Request, res: Response) => {
   }
 };
 
-//get all issue
+//get all issue controller
 
 export const getAllIssuesController = async (req: Request, res: Response) => {
   try {
@@ -50,7 +51,7 @@ export const getAllIssuesController = async (req: Request, res: Response) => {
   }
 };
 
-//get single issue
+//get single issue controller
 export const getSingleIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
@@ -66,16 +67,45 @@ export const getSingleIssueController = async (req: Request, res: Response) => {
   }
 };
 
-// Maintainer (any issue) OR Contributor (own issue, only if status is open)
-
-// {
-//   "title": "Updated: Database pool exhaustion fix needed",
-//   "description": "Updated description with reproduction steps...",
-//   "type": "bug"
-// }
-
-//update issue
+//update issue controller
 export const updateIssueController = async (req: Request, res: Response) => {
+  try {
+    const issueId = req.params?.id;
+
+    // get user details from verifyJwtToken middleware
+    const user = req.userDetails;
+
+    if (!user) {
+      throw new Error("Authorization fail");
+    }
+
+    const payload = req.body;
+
+    //update issue service
+    const updateIssueResponse = await updateIssueIntoDb(
+      Number(issueId),
+      user,
+      payload,
+    );
+
+    successResponse(
+      res,
+      StatusCodes.OK,
+      updateIssueResponse,
+      "Issue updated successfully",
+    );
+  } catch (error) {
+    // check the error object is js standard error ;
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An error occurred when updating issue";
+
+    errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
+  }
+};
+
+export const deleteIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
     console.log("issue id", issueId);
@@ -83,14 +113,14 @@ export const updateIssueController = async (req: Request, res: Response) => {
     if (!user) {
       throw new Error("Authorization fail");
     }
-    const payload = req.body;
 
-    const updateIssue = await updateIssueIntoDb(Number(issueId), user, payload);
-
-    console.log("update issue", updateIssue);
+    const deleteIssue = await deleteIssueFromDb(Number(issueId));
   } catch (error) {
+    // check the error object is js standard error ;
     const errorMessage =
-      error instanceof Error ? error.message : "An error occurred"; // check the error object is js standard error ;
+      error instanceof Error
+        ? error.message
+        : "An error occurred on deleting issue";
 
     errorResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, errorMessage, error);
   }

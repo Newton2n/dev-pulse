@@ -36,3 +36,4 @@ export const loginController = async (req: Request, res: Response) => {
     errorResponse(res, StatusCodes.NOT_FOUND, errorMessage, error); // send error response
   }
 };
+

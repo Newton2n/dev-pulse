@@ -97,20 +97,14 @@ export const getSingleIssueFromDb = async (
   };
 };
 
-// Maintainer (any issue) OR Contributor (own issue, only if status is open)
-
-// {
-//   "title": "Updated: Database pool exhaustion fix needed",
-//   "description": "Updated description with reproduction steps...",
-//   "type": "bug"
-// }
-
 export const updateIssueIntoDb = async (
   issueId: number,
   userDetails: IUserTokenPayload,
   payload: TIssueUpdatePayload,
 ) => {
-  const { title, description, type } = payload;
+  const { title, description, type, status } = payload;
+
+  const updateIssueStatus = status ? status : "open";
 
   if (!title || !description || !type) {
     throw new Error(
@@ -120,32 +114,45 @@ export const updateIssueIntoDb = async (
 
   const { id: userId, role: userRole } = userDetails; //rename id and role
 
-  const issueDetails = await getIssueDetails(issueId);
+  const issueDetails = await getIssueDetails(issueId); //get issue details
 
-  const isMaintainer = userRole === "maintainer";
+  const isMaintainer = userRole === "maintainer"; // check is maintainer
 
+  // A contributor can only update their own issue if it is still open.
   const isContributorAndOwnIssue =
     userRole === "contributor" &&
     userId === issueDetails.reporter_id &&
     issueDetails.status === "open";
 
+  // get access to update issue is user is maintainer or contributor(own issue, only if status is open)
   if (isMaintainer || isContributorAndOwnIssue) {
-    // {
-    //   "title": "Updated: Database pool exhaustion fix needed",
-    //   "description": "Updated description with reproduction steps...",
-    //   "type": "bug"
-    // }
+
+    //db query
     const updateIssue = await pool.query(
       `
       UPDATE issues
-      SET title = $1 ,description =$2 ,type =$3 ,updated_at = NOW()
-      WHERE id = $4
+      SET title = $1 ,description =$2 ,type =$3 ,status =$4 ,updated_at = NOW()
+      WHERE id = $5
+      RETURNING *
       `,
-      [title, description, type, issueId],
-    );
-    console.log("update issue details", updateIssue);
-  }
+      [title, description, type, updateIssueStatus, issueId],
+    ); 
+    
+    //throw error if update issue don not resolve
+    if (updateIssue.rows.length === 0) {
+      throw new Error(
+        "Issue not found or you do not have permission to edit it",
+      );
+    }
 
-  //   throw new Error("Contributor can not update others issue details");
-  // }
+    return updateIssue.rows[0];
+  } else {
+    throw new Error(
+      "Contributor cannot update issues owned by others or issues that are not open",
+    );
+  }
 };
+
+//delete issue
+
+export const deleteIssueFromDb = async (issueId: number) => {};
