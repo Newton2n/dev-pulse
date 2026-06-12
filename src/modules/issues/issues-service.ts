@@ -8,6 +8,7 @@ import type {
 } from "./issues-interface";
 import getUserDetails from "../../utils/get-user-details";
 import getIssueDetails from "../../utils/get-issue-details";
+import type { Request } from "express";
 
 //create issue
 export const createIssueIntoDb = async (
@@ -39,12 +40,37 @@ export const createIssueIntoDb = async (
 };
 
 // get all issues
-export const getAllIssueFromDb = async (): Promise<IIssueAndReporter[]> => {
+export const getAllIssueFromDb = async (
+  req: Request,
+): Promise<IIssueAndReporter[]> => {
+  const { sort, type, status } = req.query;
+
+  const queryValues: string[] = [];
+  const whereClauses: string[] = [];
+
+
+  let dbQuery = "SELECT * FROM issues"; //base db query
+
+  if (type) {
+    queryValues.push(type as string);
+    whereClauses.push(`type =$${queryValues.length}`);
+  } // push query and clauses
+
+  if (status) {
+    queryValues.push(status as string);
+    whereClauses.push(`status =$${queryValues.length}`);
+  } // push query and clauses
+
+
+  if (whereClauses.length > 0) {
+    dbQuery += " WHERE " + whereClauses.join(" AND ");
+  } // check status and join clauses
+
+  dbQuery += ` ORDER BY id ${sort ==='oldest' ? 'ASC':'DESC'}`; // sort the result default newest 
+
   const getIssueResponse = await pool.query(
-    `
-        SELECT * FROM issues
-        
-        `,
+    `${dbQuery}`,
+    queryValues,
   ); // get all issues from issues table
 
   const allIssues = getIssueResponse.rows; //all issues
@@ -171,5 +197,4 @@ export const deleteIssueFromDb = async (issueId: number) => {
   if (deleteIssue.rowCount === 0) {
     throw new Error("Issue not found");
   }
-
 };
