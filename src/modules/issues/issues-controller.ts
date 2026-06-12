@@ -44,7 +44,7 @@ export const createIssueController = async (req: Request, res: Response) => {
 export const getAllIssuesController = async (req: Request, res: Response) => {
   try {
     // get all issues with reporter details
-    const response = await getAllIssueFromDb();
+    const response = await getAllIssueFromDb(req);
 
     successResponse(
       res,
@@ -129,7 +129,7 @@ export const updateIssueController = async (req: Request, res: Response) => {
 export const deleteIssueController = async (req: Request, res: Response) => {
   try {
     const issueId = req.params?.id;
-    console.log("issue id", issueId);
+    
     const user = req.userDetails;
     if (!user || !issueId) {
       throw new Error("Authorization fail or No issue id");
