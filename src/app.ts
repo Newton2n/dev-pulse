@@ -23,7 +23,16 @@ app.use("/api/auth", loginRoute);
 //Issues route
 app.use("/api/issues", issuesRoute);
 
-//Handle Global Route Not Found 
+//basic home route
+app.get("/",(req: Request, res: Response) => {
+  res.status(200).json({
+    status: "success",
+    message: "Welcome to the Issue Tracker API Server",
+    version: "1.0.0"
+  });
+})
+
+//Handle Global Route Not Found
 app.use((req: Request, res: Response) => {
   errorResponse(
     res,
